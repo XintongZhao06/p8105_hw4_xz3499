@@ -1,0 +1,23 @@
+# 欢迎来到我的个人网站
+
+## 关于我
+这里写一段简短的自我介绍。
+
+### 专业技能
+- 数据分析
+- R编程
+- 数据可视化
+
+### 联系方式
+- 邮箱：[你的邮箱](mailto:你的邮箱@example.com)
+- GitHub：[你的GitHub](https://github.com/你的GitHub用户名)
+
+```{r setup, include=FALSE}
+# 这里可以放一些设置代码
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, include=FALSE}
+# 如果需要，可以在这里生成一些图表
+library(ggplot2)
+```
