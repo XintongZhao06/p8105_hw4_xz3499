@@ -1,79 +1,78 @@
-# Xintong Zhao
+---
+title: "Xintong Zhao - Resume"
+output: 
+  html_document:
+    css: resume.css
+---
 
-**Contact Information**  
-New York, USA  
-Email: xz3499@cumc.columbia.edu  
-Phone: +1 6463822498  
-Available from June 1, 2026
+## Xintong Zhao
 
-## Education
+**New York, USA** | **xz3499@cumc.columbia.edu** | **+1 6463822498** | **Available from June 1, 2026**
 
-### Columbia University
-*New York, USA*  
-**Master of Public Health Data Science**  
-September 2025 - June 2027 (Expected)
+---
 
-### Nankai University  
-*Tianjin, China*  
-**Bachelor of Engineering in Information Security** & **Bachelor of Law**  
-September 2021 - June 2025  
+### Education
+
+**Columbia University**, New York, USA  
+*Sep 2025 – Jun 2027*  
+- **Major**: Public Health Data Science
+
+**Nankai University**, Tianjin, China  
+*Sep 2021 – Jun 2025*  
+- **Major 1**: Information Security, Candidate for Bachelor of Engineering  
+- **Major 2**: Law, Candidate for Bachelor of Law  
 - **GPA**: 82.43/100 (Top 30%)  
 - **Total Credits Earned**: 219.5  
 - **Academic Awards**: The Affiliated Hospital of Nankai University Research Innovation Scholarship (2024)
 
-## Technical Skills
+---
 
-**Programming Languages**: R (Proficient), Python (Proficient), C++ (Proficient), Java (Proficient), SQL (Proficient), MATLAB (Intermediate), Assembler Language (Intermediate), HTML (Intermediate)
+### Skills
 
-**Data Science & ML**: Random Forest, Gradient Boosting Machines (GBM), XGBoost, SHAP Analysis, Multiple Linear Regression, Regularization Techniques, Cross-validation, Sensitivity Analysis
+**Programming**: R (Proficient), Python (Proficient), C++ (Proficient), Java (Proficient), SQL (Proficient), MATLAB (Intermediate), Assembler Language (Intermediate), HTML (Intermediate)
 
-**Tools & Methods**: Exploratory Data Analysis (EDA), Statistical Modeling, Data Cleaning, Hyperparameter Tuning, Feature Selection, Model Optimization
+---
 
-## Publications
+### Publications
 
-**Zhu, J., Zhao, X., Sun, Y., Song, S., & Yuan, X.** (2024). *Relational Data Cleaning Meets Artificial Intelligence: A Survey*. Data Science and Engineering (Q1 journal in SCI).  
-[https://doi.org/10.1007/s41019-024-00266-7](https://doi.org/10.1007/s41019-024-00266-7)
+- **Zhu, J., Zhao, X., Sun, Y., Song, S., & Yuan, X.** (2024). Relational Data Cleaning Meets Artificial Intelligence: A Survey. *Data Science and Engineering* (a Q1 journal in the SCI). https://doi.org/10.1007/s41019-024-00266-7.
 
-## Professional Experience
+---
+
+### Work Experience
 
 ### Smartphone Supply Chain Business Assistant
-**Xiaomi Communications Co., Ltd.** | Beijing, China  
-May 2024 – August 2024
+**Xiaomi Communications Co., Ltd.** - Beijing, China  
+*May 2024 – Aug 2024*
 
-- Developed and deployed multiple linear regression model in R to analyze and predict beauty algorithm pricing
-- Implemented regularization techniques to mitigate overfitting and enable accurate price predictions
-- Conducted exploratory data analysis (EDA) on historical procurement data including last procurement prices, cost analysis prices, competitor prices, and market prices
-- Applied cross-validation techniques to assess model performance and optimized weight distribution
-- Performed sensitivity analysis to evaluate impact of feature coefficients on price forecasts
+- Developed and deployed a multiple linear regression model in R to analyze and predict beauty algorithm pricing, reducing reliance on manual estimates.
+- Fitted the model using historical data (2018-2023) and implemented regularization techniques to mitigate overfitting to enable accurate price predictions for new beauty algorithms, and performed sensitivity analysis to evaluate the impact of feature coefficients on price forecasts.
+- Employed R to perform exploratory data analysis (EDA) on historical procurement data, including last procurement prices (LP), cost analysis prices (CA), competitor prices (CP), and market prices (MP).
+- Developed and trained a predictive pricing model, applied cross-validation techniques to assess model performance, and optimized weight distribution to ensure that target prices were closely aligned with actual transaction prices.
 
-## Research Experience
+---
 
-### Analysis of COVID-19 Transmission Dynamics Based on SIR Model
-**Columbia University** | 3-Person Project, instructed by R. Todd Ogden  
-July 2024 – October 2024
+### Research Experience
 
-- Preprocessed dataset from Johns Hopkins CSSE (Jan 2020 - Mar 2023) with confirmed, death, and recovered cases from 20 countries
-- Utilized Random Forest, GBM, and XGBoost models for predictions, achieving high performance metrics (MSE, RMSE, MAE, R²)
-- Applied SHAP values to interpret machine learning model predictions and elucidate feature rankings
-- Employed optimization techniques including model simplification, feature selection, and hyperparameter tuning
+#### Analysis of COVID-19 Transmission Dynamics Based on SIR Model
+**3-Person Project, instructed by R. Todd Ogden, Columbia University**  
+*Jul 2024 – Oct 2024*
 
-### Enhancing Relational Data Quality through Traditional and AI-Based Cleaning Techniques
-**Database and Information System Lab, Nankai University** | 2-Person Project, instructed by Yu Sun  
-September 2023 – August 2024
+- Preprocessed dataset from Johns Hopkins CSSE (Jan 2020 - Mar 2023) with confirmed, death, and recovered cases from 20 countries.
+- Utilized Random Forest, GBM, and XGBoost models for predictions, achieving high performance metrics (MSE, RMSE, MAE, R²).
+- Applied SHAP values to interpret machine learning model predictions and elucidate feature rankings.
+- Employed optimization techniques including model simplification, feature selection, and hyperparameter tuning.
 
-- Conducted extensive literature review on traditional and AI-based methods for relational data cleaning
-- Focused on three essential tasks: error detection, data repairing, and data imputation
-- Analyzed and compared effectiveness of traditional signal-based methods and AI techniques across five dimensions
-- Explored integration of deep learning and machine learning techniques in data cleaning systems
+#### Enhancing Relational Data Quality through Traditional and AI-Based Cleaning Techniques
+**2-Person Project, instructed by Yu Sun, Database and Information System Lab, NKU**  
+*Sep 2023 – Aug 2024*
 
-## Awards & Honors
+- Conducted extensive literature review on traditional and AI-based methods for relational data cleaning.
+- Focused on three essential tasks: error detection, data repairing, and data imputation.
+- Analyzed and compared effectiveness of traditional signal-based methods and AI techniques across five dimensions.
+- Explored integration of deep learning and machine learning techniques in data cleaning systems.
 
-- The Affiliated Hospital of Nankai University Research Innovation Scholarship (2024)
 
-```{r, include=FALSE}
-# This resume page doesn't need code chunks unless you want to add dynamic elements
-# You could potentially add a last updated date:
-last_updated <- format(Sys.Date(), "%B %d, %Y")
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
-
-*Last updated: `r last_updated`*
