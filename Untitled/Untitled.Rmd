@@ -1,7 +1,14 @@
 ---
-title: "Welcome to My Website!"
-output: html_document
+title: "home"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+
 ---
+
+## Welcome to My Website
+
 
 ### Xintong Zhao
 **Public Health Data Science Graduate Student**
@@ -26,3 +33,5 @@ This is my personal website where you can learn about my background, skills, and
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
+
+

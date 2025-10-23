@@ -1,17 +1,11 @@
 ---
-title: "Personal Website"
+title: "About me"
 output: 
   html_document:
     css: index.css
 ---
 
-### Xintong Zhao
-
 <img src="images/profile.jpg" style="width:200px; border-radius:50%; float:right; margin-left:20px;">
-
-Public Health Data Science Graduate Student at Columbia University
-
-### About Me
 
 Public Health Data Science graduate student at Columbia University with a strong background in Information Security and Law from Nankai University. Passionate about leveraging data science techniques to solve complex public health challenges.
 

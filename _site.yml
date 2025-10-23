@@ -4,11 +4,13 @@ navbar:
   title: "Xintong Zhao"
   left:
     - text: "Home"
-      href: index.Rhtml
+      href: home.html
     - text: "About me"
       href: index.html
     - text: "Resume"
       href: resume.html
+    - text: "Weather Dashboard"
+      href: dashboard.html
   right:
     - icon: fa-envelope fa-lg
       href: mailto:xz3499@cumc.columbia.edu
@@ -18,5 +20,5 @@ navbar:
       href: https://linkedin.com/in/iris-qwertyuiop
 output:
   html_document:
-    theme: cerulean
+    theme: flatly
     highlight: textmate
