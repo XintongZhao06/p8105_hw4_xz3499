@@ -1,0 +1,232 @@
+---
+title: "Weather Data Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    theme: flatly
+    social: menu
+    source_code: embed
+---
+
+```{r, include=FALSE}
+library(flexdashboard)
+library(plotly)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(shiny)
+library(p8105.datasets)
+```
+
+
+```{r, include=FALSE}
+data("ny_noaa")
+
+noaa_processed <- ny_noaa %>% 
+  mutate(
+    date = as.Date(date),
+    year = year(date),
+    month = month(date, label = TRUE),
+    prcp_mm = as.numeric(prcp) / 10,
+    tmax = as.numeric(tmax)/10,
+    tmin = as.numeric(tmin)/10
+  ) %>% 
+  filter(year >= 2000 & year <= 2010) %>%
+  filter(!is.na(tmax) & !is.na(tmin) & !is.na(prcp_mm) & !is.na(snwd)) %>%
+  filter(prcp_mm >= 0 & prcp_mm <= 500,
+         snow >= 0 & snow <= 1000) 
+
+summary(noaa_processed)
+```
+
+```{r}
+# 创建月度汇总数据用于部分图表
+monthly_summary <- noaa_processed %>%
+  group_by(year, month) %>%
+  summarise(
+    avg_tmax = mean(tmax, na.rm = TRUE),
+    avg_tmin = mean(tmin, na.rm = TRUE),
+    total_prcp = sum(prcp_mm, na.rm = TRUE),
+    max_snow = max(snow, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+# 创建年度汇总数据
+yearly_summary <- noaa_processed %>%
+  group_by(year) %>%
+  summarise(
+    avg_tmax = mean(tmax, na.rm = TRUE),
+    avg_tmin = mean(tmin, na.rm = TRUE),
+    total_prcp = sum(prcp_mm, na.rm = TRUE),
+    .groups = 'drop'
+  )
+```
+
+```{r}
+selectInput("selected_year", "Select Year:",
+            choices = c("All", 2000:2010),
+            selected = "All")
+
+selectInput("chart_type", "Temperature Chart Type:",
+            choices = c("Line", "Bar"),
+            selected = "Line")
+
+sliderInput("prcp_range", "Precipitation Range (mm):",
+            min = 0, max = 50, value = c(0, 30))
+```
+
+```{r}
+# 图表1: 温度趋势线图
+renderPlotly({
+  
+  if (input$selected_year == "All") {
+    plot_data <- monthly_summary
+    group_var <- ~year
+  } else {
+    plot_data <- monthly_summary %>% filter(year == as.numeric(input$selected_year))
+    group_var <- NULL
+  }
+  
+  if (input$chart_type == "Line") {
+    p <- plot_ly(plot_data, x = ~month) %>%
+      add_trace(y = ~avg_tmax, name = "Max Temp", type = 'scatter', mode = 'lines+markers',
+                line = list(color = 'red'), marker = list(color = 'red')) %>%
+      add_trace(y = ~avg_tmin, name = "Min Temp", type = 'scatter', mode = 'lines+markers',
+                line = list(color = 'blue'), marker = list(color = 'blue')) %>%
+      layout(title = "Monthly Temperature Trends",
+             xaxis = list(title = "Month"),
+             yaxis = list(title = "Temperature (°C)"),
+             showlegend = TRUE)
+  } else {
+    p <- plot_ly(plot_data, x = ~month, y = ~avg_tmax, type = 'bar', 
+                 name = 'Max Temp', marker = list(color = 'red')) %>%
+      add_trace(y = ~avg_tmin, name = 'Min Temp', marker = list(color = 'blue')) %>%
+      layout(title = "Monthly Temperature Comparison",
+             xaxis = list(title = "Month"),
+             yaxis = list(title = "Temperature (°C)"),
+             barmode = 'group')
+  }
+  
+  p
+})
+```
+
+```{r}
+# 图表2: 降水量分布直方图
+renderPlotly({
+  
+  filtered_data <- noaa_processed %>%
+    filter(prcp_mm >= input$prcp_range[1] & prcp_mm <= input$prcp_range[2])
+  
+  if (input$selected_year != "All") {
+    filtered_data <- filtered_data %>% filter(year == as.numeric(input$selected_year))
+  }
+  
+  plot_ly(filtered_data, x = ~prcp_mm, type = "histogram",
+          nbinsx = 30, marker = list(color = 'lightblue',
+                                     line = list(color = 'darkblue', width = 1))) %>%
+    layout(title = "Distribution of Daily Precipitation",
+           xaxis = list(title = "Precipitation (mm)"),
+           yaxis = list(title = "Frequency"))
+})
+```
+
+```{r}
+# 图表3: 年度温度范围箱线图
+renderPlotly({
+  
+  plot_data <- noaa_processed
+  
+  if (input$selected_year != "All") {
+    plot_data <- plot_data %>% filter(year == as.numeric(input$selected_year))
+  }
+  
+  # 为每个站点创建温度范围数据
+  station_temps <- plot_data %>%
+    group_by(id) %>%
+    summarise(
+      avg_temp = mean(c(tmax, tmin), na.rm = TRUE),
+      temp_range = mean(tmax - tmin, na.rm = TRUE),
+      .groups = 'drop'
+    ) %>%
+    slice_max(temp_range, n = 20)  # 取温度范围最大的20个站点
+  
+  plot_ly(station_tems, y = ~temp_range, type = "box",
+          boxpoints = "all", jitter = 0.3,
+          pointpos = -1.8, marker = list(color = 'orange'),
+          line = list(color = 'darkorange')) %>%
+    layout(title = "Temperature Range Distribution by Station",
+           yaxis = list(title = "Temperature Range (°C)"),
+           xaxis = list(title = ""))
+})
+```
+
+```{r}
+# 图表4: 降雪量与温度关系散点图
+renderPlotly({
+  
+  filtered_data <- noaa_processed %>%
+    filter(snow > 0 & snow <= 200)  # 过滤合理的降雪量范围
+  
+  if (input$selected_year != "All") {
+    filtered_data <- filtered_data %>% filter(year == as.numeric(input$selected_year))
+  }
+  
+  # 采样以避免过度绘图
+  sampled_data <- filtered_data %>% sample_n(min(1000, nrow(filtered_data)))
+  
+  plot_ly(sampled_data, x = ~tmax, y = ~snow, type = 'scatter', mode = 'markers',
+          marker = list(size = 8, opacity = 0.6, 
+                        color = ~tmax, colorscale = 'Viridis',
+                        colorbar = list(title = "Max Temp (°C)")),
+          text = ~paste("Date:", date, "<br>Max Temp:", tmax, "°C<br>Snow:", snow, "mm")) %>%
+    layout(title = "Snowfall vs Maximum Temperature",
+           xaxis = list(title = "Maximum Temperature (°C)"),
+           yaxis = list(title = "Snowfall (mm)"))
+})
+```
+
+```{r}
+# 图表5: 月度降水量热力图
+renderPlotly({
+  
+  heatmap_data <- monthly_summary %>%
+    group_by(month, year) %>%
+    summarise(avg_prcp = mean(total_prcp, na.rm = TRUE), .groups = 'drop')
+  
+  plot_ly(heatmap_data, x = ~year, y = ~month, z = ~avg_prcp, type = "heatmap",
+          colorscale = "Blues", colorbar = list(title = "Precipitation (mm)")) %>%
+    layout(title = "Monthly Precipitation Patterns (2000-2010)",
+           xaxis = list(title = "Year"),
+           yaxis = list(title = "Month"))
+})
+```
+
+```{r}
+# 图表6: 气象站数据完整性条形图
+renderPlotly({
+  
+  station_performance <- noaa_processed %>%
+    group_by(id) %>%
+    summarise(
+      records = n(),
+      completeness = mean(!is.na(tmax) & !is.na(tmin) & !is.na(prcp_mm)) * 100,
+      .groups = 'drop'
+    ) %>%
+    arrange(desc(records)) %>%
+    head(15)  # 取记录最多的15个站点
+  
+  plot_ly(station_performance, x = ~reorder(id, records), y = ~records, type = 'bar',
+          marker = list(color = ~completeness, 
+                        colorscale = 'Viridis',
+                        colorbar = list(title = "Data<br>Completeness %")),
+          text = ~paste("Completeness:", round(completeness, 1), "%"),
+          hoverinfo = 'text') %>%
+    layout(title = "Top Weather Stations by Record Count",
+           xaxis = list(title = "Station ID"),
+           yaxis = list(title = "Number of Records"),
+           showlegend = FALSE)
+})
+```
+
