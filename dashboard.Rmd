@@ -3,14 +3,9 @@
 title: "NOAA Weather Dashboard"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: rows
-    vertical_layout: fill
-runtime: shiny
+    orientation: columns
+    vertical_layout: scroll
 ---
-
-```{r, echo=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-```
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -18,223 +13,230 @@ library(lubridate)
 library(plotly)
 library(flexdashboard)
 library(p8105.datasets)
-library(shiny)
 
-# 载入 NOAA 数据集
 data("ny_noaa")
 
-noaa_processed <- ny_noaa %>% 
+set.seed(123)
+noaa_data <- ny_noaa %>%
+  sample_n(30000) %>% 
   mutate(
     date = as.Date(date),
     year = year(date),
     month = month(date, label = TRUE),
     prcp_mm = as.numeric(prcp) / 10,
     tmax = as.numeric(tmax)/10,
-    tmin = as.numeric(tmin)/10
+    tmin = as.numeric(tmin)/10,
+    avg_temp = (tmax + tmin) / 2
   ) %>% 
   filter(year >= 2000 & year <= 2010) %>%
-  filter(!is.na(tmax) & !is.na(tmin) & !is.na(prcp_mm) & !is.na(snwd)) %>%
+  filter(!is.na(tmax) & !is.na(tmin) & !is.na(prcp_mm)) %>%
   filter(prcp_mm >= 0 & prcp_mm <= 500,
-         snow >= 0 & snow <= 1000) 
+         snow >= 0 & snow <= 1000)
+
+
+monthly_summary <- noaa_data %>%
+  group_by(month) %>%
+  summarise(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    mean_tmin = mean(tmin, na.rm = TRUE),
+    total_prcp = sum(prcp_mm, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+yearly_summary <- noaa_data %>%
+  group_by(year) %>%
+  summarise(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    mean_tmin = mean(tmin, na.rm = TRUE),
+    total_prcp = sum(prcp_mm, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+snow_data <- noaa_data %>%
+  filter(!is.na(snwd) & !is.na(avg_temp) & snwd > 0) %>%
+  sample_n(min(2000, nrow(.)))
 ```
 
----
+### 🌡️ Monthly Temperature Trends
 
 ```{r}
-# 侧边栏控件 - 移除手动范围选择
-selectInput(
-  "selected_year",
-  "Select Year:",
-  choices = c("All", 2000:2010),
-  selected = "All"
-)
-
-selectInput(
-  "plot_type",
-  "Temperature Plot Type:",
-  choices = c("Line", "Bar", "Boxplot"),
-  selected = "Line"
-)
-
-checkboxGroupInput(
-  "selected_months",
-  "Select Months:",
-  choices = month.abb,
-  selected = month.abb,
-  inline = TRUE
-)
+plot_ly(monthly_summary) %>%
+  add_trace(x = ~month, y = ~mean_tmax, type = 'scatter', mode = 'lines+markers',
+            name = 'Max Temperature', 
+            line = list(color = '#1E3A8A', width = 4), 
+            marker = list(color = '#1E3A8A', size = 10, symbol = 'circle')) %>%
+  add_trace(x = ~month, y = ~mean_tmin, type = 'scatter', mode = 'lines+markers',
+            name = 'Min Temperature', 
+            line = list(color = '#60A5FA', width = 4), 
+            marker = list(color = '#60A5FA', size = 10, symbol = 'circle')) %>%
+  layout(
+    title = list(text = "Average Monthly Temperature (2000-2010)", 
+                 font = list(size = 18, color = '#1E3A8A', family = 'Arial')),
+    xaxis = list(title = "Month", 
+                 gridcolor = 'rgba(96, 165, 250, 0.3)',
+                 linecolor = '#1E3A8A',
+                 tickfont = list(color = '#1E3A8A')),
+    yaxis = list(title = "Temperature (°C)", 
+                 gridcolor = 'rgba(96, 165, 250, 0.3)',
+                 linecolor = '#1E3A8A',
+                 tickfont = list(color = '#1E3A8A')),
+    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
+    paper_bgcolor = 'rgba(248, 250, 252, 1)',
+    font = list(color = '#1E3A8A', family = 'Arial'),
+    showlegend = TRUE,
+    legend = list(orientation = 'h', y = -0.2)
+  )
 ```
-
----
-
-
-### 🌡️ Temperature Trends
-
-```{r}
-renderPlotly({
-  df <- noaa_processed
-  if (input$selected_year != "All") {
-    df <- df[df$year == as.numeric(input$selected_year), ]
-  }
-  
-  df <- df %>% filter(month %in% input$selected_months)
-  
-  if (input$plot_type == "Line") {
-    df_summary <- df %>%
-      group_by(month) %>%
-      summarise(
-        mean_tmax = mean(tmax, na.rm = TRUE),
-        mean_tmin = mean(tmin, na.rm = TRUE),
-        .groups = "drop"
-      )
-    
-    plot_ly(df_summary) %>%
-      add_trace(x = ~month, y = ~mean_tmax, type = 'scatter', mode = 'lines+markers',
-                name = 'Max Temp', 
-                line = list(color = '#1E3A8A', width = 3), 
-                marker = list(color = '#1E3A8A', size = 8)) %>%
-      add_trace(x = ~month, y = ~mean_tmin, type = 'scatter', mode = 'lines+markers',
-                name = 'Min Temp', 
-                line = list(color = '#60A5FA', width = 3), 
-                marker = list(color = '#60A5FA', size = 8)) %>%
-      layout(
-        title = list(text = "Monthly Temperature Trends", font = list(size = 16, color = '#1E3A8A')),
-        xaxis = list(title = "Month", gridcolor = 'rgba(59, 130, 246, 0.2)', color = '#1E3A8A'),
-        yaxis = list(title = "Temperature (°C)", gridcolor = 'rgba(59, 130, 246, 0.2)', color = '#1E3A8A'),
-        plot_bgcolor = 'rgba(255,255,255,0.9)',
-        paper_bgcolor = 'rgba(255,255,255,0.9)',
-        font = list(color = '#1E3A8A'),
-        showlegend = TRUE
-      )
-    
-  } else if (input$plot_type == "Bar") {
-    df_summary <- df %>%
-      group_by(month) %>%
-      summarise(
-        mean_tmax = mean(tmax, na.rm = TRUE),
-        mean_tmin = mean(tmin, na.rm = TRUE),
-        .groups = "drop"
-      )
-    
-    plot_ly(df_summary) %>%
-      add_trace(x = ~month, y = ~mean_tmax, type = 'bar', name = 'Max Temp',
-                marker = list(color = '#1E3A8A')) %>%
-      add_trace(x = ~month, y = ~mean_tmin, type = 'bar', name = 'Min Temp',
-                marker = list(color = '#60A5FA')) %>%
-      layout(
-        title = list(text = "Monthly Temperature Comparison", font = list(size = 16, color = '#1E3A8A')),
-        xaxis = list(title = "Month", gridcolor = 'rgba(59, 130, 246, 0.2)', color = '#1E3A8A'),
-        yaxis = list(title = "Temperature (°C)", gridcolor = 'rgba(59, 130, 246, 0.2)', color = '#1E3A8A'),
-        barmode = 'group',
-        plot_bgcolor = 'rgba(255,255,255,0.9)',
-        paper_bgcolor = 'rgba(255,255,255,0.9)',
-        font = list(color = '#1E3A8A')
-      )
-    
-  } else { # Boxplot
-    plot_ly(df, x = ~month, y = ~tmax, type = 'box', 
-            name = 'Max Temp', boxpoints = 'outliers',
-            marker = list(color = '#1E3A8A'),
-            line = list(color = '#1E3A8A')) %>%
-      add_trace(x = ~month, y = ~tmin, type = 'box', 
-                name = 'Min Temp', boxpoints = 'outliers',
-                marker = list(color = '#60A5FA'),
-                line = list(color = '#60A5FA')) %>%
-      layout(
-        title = list(text = "Temperature Distribution by Month", font = list(size = 16, color = '#1E3A8A')),
-        xaxis = list(title = "Month", gridcolor = 'rgba(59, 130, 246, 0.2)', color = '#1E3A8A'),
-        yaxis = list(title = "Temperature (°C)", gridcolor = 'rgba(59, 130, 246, 0.2)', color = '#1E3A8A'),
-        plot_bgcolor = 'rgba(255,255,255,0.9)',
-        paper_bgcolor = 'rgba(255,255,255,0.9)',
-        font = list(color = '#1E3A8A')
-      )
-  }
-})
-```
-
----
 
 ### 🌧️ Precipitation Distribution
 
 ```{r}
-renderPlotly({
-  df <- noaa_processed %>%
-    filter(!is.na(prcp_mm))
-  
-  if (input$selected_year != "All") {
-    df <- df[df$year == as.numeric(input$selected_year), ]
-  }
-  
-  df <- df %>% filter(month %in% input$selected_months)
-  
-  plot_ly(df,
-          x = ~prcp_mm,
-          type = 'histogram',
-          nbinsx = 30,
-          marker = list(
-            color = '#3B82F6',
-            line = list(color = '#1D4ED8', width = 2)
-          )) %>%
-    layout(
-      title = list(text = "Precipitation Distribution", font = list(size = 16, color = '#1E3A8A')),
-      xaxis = list(title = "Precipitation (mm)", gridcolor = 'rgba(59, 130, 246, 0.2)', color = '#1E3A8A'),
-      yaxis = list(title = "Frequency", gridcolor = 'rgba(59, 130, 246, 0.2)', color = '#1E3A8A'),
-      plot_bgcolor = 'rgba(255,255,255,0.9)',
-      paper_bgcolor = 'rgba(255,255,255,0.9)',
-      font = list(color = '#1E3A8A')
-    )
-})
+plot_ly(noaa_data,
+        x = ~prcp_mm,
+        type = 'histogram',
+        nbinsx = 40,
+        marker = list(
+          color = '#3B82F6',
+          line = list(color = '#1D4ED8', width = 1.5)
+        ),
+        hoverinfo = 'x+y') %>%
+  layout(
+    title = list(text = "Daily Precipitation Distribution", 
+                 font = list(size = 18, color = '#1E3A8A', family = 'Arial')),
+    xaxis = list(title = "Precipitation (mm)", 
+                 gridcolor = 'rgba(96, 165, 250, 0.3)',
+                 linecolor = '#1E3A8A',
+                 tickfont = list(color = '#1E3A8A')),
+    yaxis = list(title = "Frequency", 
+                 gridcolor = 'rgba(96, 165, 250, 0.3)',
+                 linecolor = '#1E3A8A',
+                 tickfont = list(color = '#1E3A8A')),
+    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
+    paper_bgcolor = 'rgba(248, 250, 252, 1)',
+    font = list(color = '#1E3A8A', family = 'Arial')
+  )
+```
+
+### 📊 Annual Temperature Ranges
+
+```{r}
+plot_ly(yearly_summary, x = ~year, y = ~mean_tmax, type = 'bar',
+        name = 'Average Max Temp', 
+        marker = list(color = '#1E3A8A',
+                      line = list(color = '#1E40AF', width = 1))) %>%
+  add_trace(y = ~mean_tmin, name = 'Average Min Temp',
+            marker = list(color = '#60A5FA',
+                          line = list(color = '#3B82F6', width = 1))) %>%
+  layout(
+    title = list(text = "Annual Temperature Averages", 
+                 font = list(size = 18, color = '#1E3A8A', family = 'Arial')),
+    xaxis = list(title = "Year", 
+                 gridcolor = 'rgba(96, 165, 250, 0.3)',
+                 linecolor = '#1E3A8A',
+                 tickfont = list(color = '#1E3A8A')),
+    yaxis = list(title = "Temperature (°C)", 
+                 gridcolor = 'rgba(96, 165, 250, 0.3)',
+                 linecolor = '#1E3A8A',
+                 tickfont = list(color = '#1E3A8A')),
+    barmode = 'group',
+    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
+    paper_bgcolor = 'rgba(248, 250, 252, 1)',
+    font = list(color = '#1E3A8A', family = 'Arial')
+  )
 ```
 
 ---
 
-### ❄️ Snow Depth by Year
+### ❄️ Snow Depth vs Temperature
 
 ```{r}
-renderPlotly({
-  df <- noaa_processed %>%
-    filter(!is.na(snwd) & !is.na(tmax) & !is.na(tmin) & snwd > 0) %>%
-    mutate(avg_temp = (tmax + tmin) / 2)  # 计算平均温度
-  
-  if (input$selected_year != "All") {
-    df <- df[df$year == as.numeric(input$selected_year), ]
-  }
-  
-  df <- df %>% filter(month %in% input$selected_months)
-  
-  # 抽样避免过度绘制
-  if (nrow(df) > 1000) {
-    set.seed(123)
-    df <- df %>% sample_n(1000)
-  }
-  
-  plot_ly(df,
-          x = ~avg_temp,  # 改为平均温度
-          y = ~snwd,
-          type = 'scatter',
-          mode = 'markers',
-          marker = list(
-            size = 10,
-            opacity = 0.7,
-            color = ~snwd,  # 改为用雪深值作为颜色
-            colorscale = 'Blues',
-            showscale = TRUE,
-            colorbar = list(title = "Snow Depth (mm)", titlefont = list(color = '#1E3A8A'))
-          ),
-          text = ~paste("Date:", date, 
-                       "<br>Month:", month,
-                       "<br>Avg Temp:", round(avg_temp, 1), "°C", 
-                       "<br>Snow Depth:", snwd, "mm"),
-          hoverinfo = 'text') %>%
-    layout(
-      title = list(text = "Snow Depth vs Average Temperature", font = list(size = 16, color = '#1E3A8A')),
-      xaxis = list(title = "Average Temperature (°C)", gridcolor = 'rgba(59, 130, 246, 0.2)', color = '#1E3A8A'),
-      yaxis = list(title = "Snow Depth (mm)", gridcolor = 'rgba(59, 130, 246, 0.2)', color = '#1E3A8A'),
-      plot_bgcolor = 'rgba(255,255,255,0.9)', 
-      paper_bgcolor = 'rgba(255,255,255,0.9)',
-      font = list(color = '#1E3A8A')
-    )
-})
+plot_ly(snow_data,
+        x = ~avg_temp,
+        y = ~snwd,
+        type = 'scatter',
+        mode = 'markers',
+        marker = list(
+          size = 12,
+          opacity = 0.7,
+          color = ~snwd,
+          colorscale = 'Blues',
+          showscale = TRUE,
+          line = list(color = '#1E3A8A', width = 1),
+          colorbar = list(title = list(text = "Snow Depth (mm)", 
+                                      font = list(color = '#1E3A8A')),
+                         tickfont = list(color = '#1E3A8A'))
+        ),
+        text = ~paste("Month:", month,
+                     "<br>Avg Temp:", round(avg_temp, 1), "°C", 
+                     "<br>Snow Depth:", snwd, "mm",
+                     "<br>Year:", year),
+        hoverinfo = 'text') %>%
+  layout(
+    title = list(text = "Snow Depth vs Average Temperature", 
+                 font = list(size = 18, color = '#1E3A8A', family = 'Arial')),
+    xaxis = list(title = "Average Temperature (°C)", 
+                 gridcolor = 'rgba(96, 165, 250, 0.3)',
+                 linecolor = '#1E3A8A',
+                 tickfont = list(color = '#1E3A8A')),
+    yaxis = list(title = "Snow Depth (mm)", 
+                 gridcolor = 'rgba(96, 165, 250, 0.3)',
+                 linecolor = '#1E3A8A',
+                 tickfont = list(color = '#1E3A8A')),
+    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
+    paper_bgcolor = 'rgba(248, 250, 252, 1)',
+    font = list(color = '#1E3A8A', family = 'Arial')
+  )
 ```
 
+### 📈 Monthly Precipitation
 
+```{r}
+plot_ly(monthly_summary, x = ~month, y = ~total_prcp, type = 'bar',
+        marker = list(color = ~total_prcp,
+                      colorscale = list(c(0, '#DBEAFE'), c(1, '#1E40AF')),
+                      line = list(color = '#1E40AF', width = 1.5)),
+        hoverinfo = 'x+y') %>%
+  layout(
+    title = list(text = "Total Monthly Precipitation", 
+                 font = list(size = 18, color = '#1E3A8A', family = 'Arial')),
+    xaxis = list(title = "Month", 
+                 gridcolor = 'rgba(96, 165, 250, 0.3)',
+                 linecolor = '#1E3A8A',
+                 tickfont = list(color = '#1E3A8A')),
+    yaxis = list(title = "Precipitation (mm)", 
+                 gridcolor = 'rgba(96, 165, 250, 0.3)',
+                 linecolor = '#1E3A8A',
+                 tickfont = list(color = '#1E3A8A')),
+    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
+    paper_bgcolor = 'rgba(248, 250, 252, 1)',
+    font = list(color = '#1E3A8A', family = 'Arial')
+  )
+```
+
+### 🌡️ Temperature Distribution
+
+```{r}
+plot_ly(noaa_data, y = ~tmax, type = "box", 
+        name = 'Max Temp', 
+        boxpoints = "outliers",
+        marker = list(color = '#1E3A8A'),
+        line = list(color = '#1E3A8A'),
+        fillcolor = 'rgba(30, 58, 138, 0.3)') %>%
+  add_trace(y = ~tmin, name = 'Min Temp',
+            marker = list(color = '#60A5FA'),
+            line = list(color = '#60A5FA'),
+            fillcolor = 'rgba(96, 165, 250, 0.3)') %>%
+  layout(
+    title = list(text = "Temperature Distribution", 
+                 font = list(size = 18, color = '#1E3A8A', family = 'Arial')),
+    xaxis = list(title = "", 
+                 tickfont = list(color = '#1E3A8A')),
+    yaxis = list(title = "Temperature (°C)", 
+                 gridcolor = 'rgba(96, 165, 250, 0.3)',
+                 linecolor = '#1E3A8A',
+                 tickfont = list(color = '#1E3A8A')),
+    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
+    paper_bgcolor = 'rgba(248, 250, 252, 1)',
+    font = list(color = '#1E3A8A', family = 'Arial')
+  )
+```

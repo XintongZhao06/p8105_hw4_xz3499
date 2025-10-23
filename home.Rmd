@@ -3,10 +3,6 @@ title: "Welcome to My Website!"
 output: html_document
 ---
 
-### Xintong Zhao
-**Public Health Data Science Graduate Student**
-
-### About This Site
 
 This is my personal website where you can learn about my background, skills, and professional experience.
 
@@ -15,7 +11,7 @@ This is my personal website where you can learn about my background, skills, and
 - **[About Me](index.html)** - My background and personal interests
 - **[Professional Resume](resume.html)** - Detailed work experience and publications
 
-### Quick Contact
+**Quick Contact**
 
 - **Email:** xz3499@cumc.columbia.edu
 - **Phone:** +1 6463822498
