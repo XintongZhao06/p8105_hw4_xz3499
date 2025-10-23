@@ -1,11 +1,9 @@
 ---
-title: "Xintong Zhao - Resume"
+title: "Resume"
 output: 
   html_document:
     css: resume.css
 ---
-
-## Xintong Zhao
 
 **New York, USA** | **xz3499@cumc.columbia.edu** | **+1 6463822498** | **Available from June 1, 2026**
 

@@ -1,5 +1,5 @@
 ---
-title: "Xintong Zhao - Personal Website"
+title: "Personal Website"
 output: 
   html_document:
     css: index.css
@@ -10,11 +10,6 @@ output:
 <img src="images/profile.jpg" style="width:200px; border-radius:50%; float:right; margin-left:20px;">
 
 Public Health Data Science Graduate Student at Columbia University
-
-Email: xz3499@cumc.columbia.edu  
-Phone: +1 6463822498  
-GitHub: XintongZhao06  
-LinkedIn: iris-qwertyuiop
 
 ### About Me
 

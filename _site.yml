@@ -1,9 +1,11 @@
 name: "Data Science Homework 4"
 output_dir: "."
 navbar:
-  title: "Home"
+  title: "Xintong Zhao"
   left:
     - text: "Home"
+      href: index.Rhtml
+    - text: "About me"
       href: index.html
     - text: "Resume"
       href: resume.html
