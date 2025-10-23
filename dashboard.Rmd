@@ -1,11 +1,16 @@
-
 ---
 title: "NOAA Weather Dashboard"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: scroll
+    fig_width: 10
+    fig_height: 6
 ---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -16,9 +21,7 @@ library(p8105.datasets)
 
 data("ny_noaa")
 
-set.seed(123)
-noaa_data <- ny_noaa %>%
-  sample_n(30000) %>% 
+noaa_processed <- ny_noaa %>%
   mutate(
     date = as.Date(date),
     year = year(date),
@@ -29,12 +32,12 @@ noaa_data <- ny_noaa %>%
     avg_temp = (tmax + tmin) / 2
   ) %>% 
   filter(year >= 2000 & year <= 2010) %>%
-  filter(!is.na(tmax) & !is.na(tmin) & !is.na(prcp_mm)) %>%
+  filter(!is.na(tmax) & !is.na(tmin) & !is.na(prcp_mm) & !is.na(snwd)) %>%
   filter(prcp_mm >= 0 & prcp_mm <= 500,
          snow >= 0 & snow <= 1000)
 
 
-monthly_summary <- noaa_data %>%
+monthly_summary <- noaa_processed %>%
   group_by(month) %>%
   summarise(
     mean_tmax = mean(tmax, na.rm = TRUE),
@@ -43,7 +46,7 @@ monthly_summary <- noaa_data %>%
     .groups = 'drop'
   )
 
-yearly_summary <- noaa_data %>%
+yearly_summary <- noaa_processed %>%
   group_by(year) %>%
   summarise(
     mean_tmax = mean(tmax, na.rm = TRUE),
@@ -52,9 +55,8 @@ yearly_summary <- noaa_data %>%
     .groups = 'drop'
   )
 
-snow_data <- noaa_data %>%
-  filter(!is.na(snwd) & !is.na(avg_temp) & snwd > 0) %>%
-  sample_n(min(2000, nrow(.)))
+snow_data <- noaa_processed %>%
+  filter(!is.na(avg_temp) & snwd > 0) 
 ```
 
 ### 🌡️ Monthly Temperature Trends
@@ -91,7 +93,7 @@ plot_ly(monthly_summary) %>%
 ### 🌧️ Precipitation Distribution
 
 ```{r}
-plot_ly(noaa_data,
+plot_ly(noaa_processed,
         x = ~prcp_mm,
         type = 'histogram',
         nbinsx = 40,
@@ -216,7 +218,7 @@ plot_ly(monthly_summary, x = ~month, y = ~total_prcp, type = 'bar',
 ### 🌡️ Temperature Distribution
 
 ```{r}
-plot_ly(noaa_data, y = ~tmax, type = "box", 
+plot_ly(noaa_processed, y = ~tmax, type = "box", 
         name = 'Max Temp', 
         boxpoints = "outliers",
         marker = list(color = '#1E3A8A'),
