@@ -10,6 +10,7 @@ This is my personal website where you can learn about my background, skills, and
 
 - **[About Me](index.html)** - My background and personal interests
 - **[Professional Resume](resume.html)** - Detailed work experience and publications
+- **[Weather Dashboard](dashboard.html)** - Problem 2 of homework 4
 
 **Quick Contact**
 
