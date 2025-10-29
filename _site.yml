@@ -4,9 +4,9 @@ navbar:
   title: "Xintong Zhao"
   left:
     - text: "Home"
-      href: home.html
-    - text: "About me"
       href: index.html
+    - text: "About me"
+      href: aboutme.html
     - text: "Resume"
       href: resume.html
     - text: "Weather Dashboard"

@@ -1,37 +1,25 @@
 ---
-title: "About me"
-output: 
-  html_document:
-    css: index.css
+title: "Welcome to My Website!"
+output: html_document
 ---
 
-<img src="images/profile.jpg" style="width:200px; border-radius:50%; float:right; margin-left:20px;">
 
-Public Health Data Science graduate student at Columbia University with a strong background in Information Security and Law from Nankai University. Passionate about leveraging data science techniques to solve complex public health challenges.
+This is my personal website where you can learn about my background, skills, and professional experience.
 
-I have experience in machine learning, statistical modeling, and data cleaning, with proficiency in R, Python, Java, C++ and SQL. My research interests include data quality improvement and AI applications in healthcare.
+**Explore the pages below:**
 
-### Interests & Hobbies
+- **[About Me](index.html)** - My background and personal interests
+- **[Professional Resume](resume.html)** - Detailed work experience and publications
+- **[Weather Dashboard](dashboard.html)** - Problem 2 of homework 4
 
-🏃 Sports
+**Quick Contact**
 
-🎵 Music 
-
-📚 Reading 
-
-✈️ Cultural Travel 
-
-🍳 Cuisine  
-
-🎬 Independent Films  
-
-🪡 Knitting
+- **Email:** xz3499@cumc.columbia.edu
+- **Phone:** +1 6463822498
+- **GitHub:** XintongZhao06
+- **LinkedIn:** iris-qwertyuiop
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  echo = FALSE, 
-  warning = FALSE, 
-  message = FALSE
-)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```

@@ -165,15 +165,13 @@ plot_ly(monthly_climate) %>%
 ### 📦 Seasonal Temperature Distribution
 
 ```{r}
-# 使用现有的noaa_data创建季节温度分布数据
 seasonal_temp_dist <- noaa_data %>%
   filter(!is.na(season) & season != "Unknown") %>%
   mutate(season = factor(season, levels = c("Winter", "Spring", "Summer", "Fall")))
 
-# 创建箱线图展示各季节温度分布
 plot_ly(seasonal_temp_dist, y = ~avg_temp, color = ~season, type = "box",
         colors = c("#1E40AF", "#3B82F6", "#60A5FA", "#93C5FD"),
-        boxpoints = "outliers",  # 显示异常值
+        boxpoints = "outliers",  
         marker = list(size = 4),
         line = list(width = 2)) %>%
   layout(
