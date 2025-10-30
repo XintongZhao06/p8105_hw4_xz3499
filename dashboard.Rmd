@@ -118,145 +118,140 @@ extreme_days <- noaa_data %>%
   pivot_longer(cols = c(hot_days, freezing_days), names_to = "type", values_to = "days")
 ```
 
+ 
+
 ### 🌡️ Seasonal Temperature Trends
 
 ```{r}
-plot_ly(seasonal_summary, x = ~year, y = ~avg_temp, color = ~season,
-        colors = c("#1E40AF", "#3B82F6", "#60A5FA", "#93C5FD")) %>%
-  add_trace(type = 'scatter', mode = 'lines+markers',
-            line = list(width = 3),
-            marker = list(size = 8)) %>%
+seasonal_summary |>
+  mutate(
+    label = str_c("Year: ", year, "\nSeason: ", season, "\nAvg Temp: ", round(avg_temp, 1), "°C")
+  ) |>
+  plot_ly(
+    x = ~year, y = ~avg_temp, color = ~season,
+    text = ~label, alpha = 0.7,
+    type = "scatter", mode = "markers"
+  ) |>
   layout(
-    title = list(text = "Seasonal Temperature Trends (2000-2010)", 
-                 font = list(size = 16, color = '#1E3A8A')),
-    xaxis = list(title = "Year", gridcolor = 'rgba(96, 165, 250, 0.3)'),
-    yaxis = list(title = "Average Temperature (°C)", gridcolor = 'rgba(96, 165, 250, 0.3)'),
-    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
-    paper_bgcolor = 'rgba(248, 250, 252, 1)',
-    font = list(color = '#1E3A8A'),
-    showlegend = TRUE
+    title = "Seasonal Temperature Trends (2000-2010)",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Average Temperature (°C)")
   )
 ```
+
+ 
 
 ### 🌧️ Precipitation Patterns Analysis
 
 ```{r}
-plot_ly(monthly_climate) %>%
-  add_trace(x = ~month, y = ~avg_precip, type = 'bar', 
-            name = 'Avg Precipitation',
-            marker = list(color = '#3B82F6')) %>%
-  add_trace(x = ~month, y = ~precip_days, type = 'scatter', mode = 'lines+markers',
-            name = 'Rainy Days (%)', yaxis = 'y2',
-            line = list(color = '#1E40AF', width = 3),
-            marker = list(color = '#1E40AF')) %>%
+monthly_climate |>
+  mutate(
+    month = fct_reorder(month, avg_precip)
+  ) |>
+  plot_ly(
+    x = ~month, y = ~avg_precip,
+    type = "bar"
+  ) |>
   layout(
-    title = list(text = "Monthly Precipitation Patterns", 
-                 font = list(size = 16, color = '#1E3A8A')),
-    xaxis = list(title = "Month", gridcolor = 'rgba(96, 165, 250, 0.3)'),
-    yaxis = list(title = "Avg Precipitation (mm)", gridcolor = 'rgba(96, 165, 250, 0.3)'),
-    yaxis2 = list(title = "Rainy Days (%)", overlaying = "y", side = "right",
-                 gridcolor = 'rgba(96, 165, 250, 0.1)'),
-    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
-    paper_bgcolor = 'rgba(248, 250, 252, 1)',
-    font = list(color = '#1E3A8A')
+    title = "Monthly Precipitation Patterns",
+    xaxis = list(title = "Month"),
+    yaxis = list(title = "Avg Precipitation (mm)")
   )
 ```
 
-### 📦 Seasonal Temperature Distribution
+ 
+### 📦 Monthly Temperature Distribution
 
 ```{r}
-seasonal_temp_dist <- noaa_data %>%
-  filter(!is.na(season) & season != "Unknown") %>%
-  mutate(season = factor(season, levels = c("Winter", "Spring", "Summer", "Fall")))
-
-plot_ly(seasonal_temp_dist, y = ~avg_temp, color = ~season, type = "box",
-        colors = c("#1E40AF", "#3B82F6", "#60A5FA", "#93C5FD"),
-        boxpoints = "outliers",  
-        marker = list(size = 4),
-        line = list(width = 2)) %>%
+noaa_data |>
+  mutate(
+    month = fct_reorder(month, avg_temp)
+  ) |>
+  plot_ly(
+    x = ~month, y = ~avg_temp, color = ~month,
+    type = "box", colors = "viridis"
+  ) |>
   layout(
-    title = list(text = "Seasonal Temperature Distribution", 
-                 font = list(size = 16, color = '#1E3A8A')),
-    xaxis = list(title = "Season", gridcolor = 'rgba(96, 165, 250, 0.3)',
-                 tickfont = list(color = '#1E3A8A')),
-    yaxis = list(title = "Temperature (°C)", gridcolor = 'rgba(96, 165, 250, 0.3)',
-                 tickfont = list(color = '#1E3A8A')),
-    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
-    paper_bgcolor = 'rgba(248, 250, 252, 1)',
-    font = list(color = '#1E3A8A'),
-    showlegend = FALSE  # 由于x轴已经显示季节，图例可以隐藏
+    title = "Monthly Temperature Distribution",
+    xaxis = list(title = "Month"),
+    yaxis = list(title = "Temperature (°C)"),
+    showlegend = FALSE
   )
 ```
 
----
+ 
 
 ### ❄️ Winter Conditions Analysis
 
 ```{r}
-plot_ly(winter_data) %>%
-  add_trace(x = ~year, y = ~avg_snow_depth, type = 'bar',
-            name = 'Avg Snow Depth (mm)',
-            marker = list(color = '#60A5FA'),
-            text = ~paste("Year:", year, "<br>Avg Snow Depth:", round(avg_snow_depth, 1), "mm"),
-            hoverinfo = 'text') %>%
-  add_trace(x = ~year, y = ~snow_days, type = 'scatter', mode = 'lines+markers',
-            name = 'Snow Days', yaxis = 'y2',
-            line = list(color = '#1E3A8A', width = 3),
-            marker = list(color = '#1E3A8A', size = 8),
-            text = ~paste("Year:", year, "<br>Snow Days:", snow_days),
-            hoverinfo = 'text') %>%
+winter_data |>
+  plot_ly(
+    x = ~year, y = ~avg_snow_depth,
+    type = "bar",
+    name = "Avg Snow Depth"
+  ) |>
+  add_trace(
+    x = ~year, y = ~snow_days,
+    type = "scatter", mode = "lines+markers",
+    name = "Snow Days",
+    yaxis = "y2"
+  ) |>
   layout(
-    title = list(text = "Winter Conditions Analysis", 
-                 font = list(size = 16, color = '#1E3A8A')),
-    xaxis = list(title = "Year", gridcolor = 'rgba(96, 165, 250, 0.3)'),
-    yaxis = list(title = "Average Snow Depth (mm)", gridcolor = 'rgba(96, 165, 250, 0.3)'),
-    yaxis2 = list(title = "Number of Snow Days", overlaying = "y", side = "right",
-                 gridcolor = 'rgba(96, 165, 250, 0.1)'),
-    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
-    paper_bgcolor = 'rgba(248, 250, 252, 1)',
-    font = list(color = '#1E3A8A')
+    title = "Winter Conditions Analysis",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Average Snow Depth (mm)"),
+    yaxis2 = list(
+      title = "Number of Snow Days",
+      overlaying = "y",
+      side = "right"
+    )
   )
 ```
+
+ 
 
 ### 📊 Climate Normals Comparison
 
 ```{r}
-plot_ly(climate_normals, x = ~month) %>%
-  add_trace(y = ~temp_high_normal, type = 'scatter', mode = 'lines',
-            name = 'Avg High Temp', 
-            line = list(color = 'lightpink', width = 4)) %>%
-  add_trace(y = ~temp_low_normal, type = 'scatter', mode = 'lines',
-            name = 'Avg Low Temp',
-            line = list(color = '#3B82F6', width = 4)) %>%
-  add_trace(y = ~temp_high_record, type = 'scatter', mode = 'markers',
-            name = 'Record High', 
-            marker = list(color = 'lightpink', size = 8, symbol = 'triangle-up')) %>%
-  add_trace(y = ~temp_low_record, type = 'scatter', mode = 'markers',
-            name = 'Record Low',
-            marker = list(color = '#1E40AF', size = 8, symbol = 'triangle-down')) %>%
+climate_normals |>
+  plot_ly(
+    x = ~month, y = ~temp_high_normal,
+    type = "scatter", mode = "lines+markers",
+    name = "Avg High Temp",
+    line = list(color = 'lightblue', width = 3),
+    marker = list(size = 6, color = 'lightblue')
+  ) |>
+  add_trace(
+    y = ~temp_low_normal,
+    name = "Avg Low Temp",
+    line = list(color = 'lightpink', width = 3),
+    marker = list(size = 6, color = 'lightpink')
+  ) |>
   layout(
-    title = list(text = "Climate Normals vs Records", 
-                 font = list(size = 16, color = '#1E3A8A')),
-    xaxis = list(title = "Month", gridcolor = 'rgba(96, 165, 250, 0.3)'),
-    yaxis = list(title = "Temperature (°C)", gridcolor = 'rgba(96, 165, 250, 0.3)'),
-    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
-    paper_bgcolor = 'rgba(248, 250, 252, 1)',
-    font = list(color = '#1E3A8A')
+    title = "Climate Normals Comparison",
+    xaxis = list(title = "Month"),
+    yaxis = list(title = "Temperature (°C)")
   )
 ```
 
-### 🔥 Heat and Freezing Analysis
+ 
+
+### 🔥 Extreme Temperature Analysis
 
 ```{r}
-plot_ly(extreme_days, x = ~year, y = ~days, color = ~type, type = 'bar') %>%
+extreme_days |>
+  mutate(
+    type = fct_reorder(type, days)
+  ) |>
+  plot_ly(
+    x = ~year, y = ~days, color = ~type,
+    type = "bar"
+  ) |>
   layout(
-    title = list(text = "Extreme Temperature Days by Season", 
-                 font = list(size = 16, color = '#1E3A8A')),
-    xaxis = list(title = "Year", gridcolor = 'rgba(96, 165, 250, 0.3)'),
-    yaxis = list(title = "Number of Days", gridcolor = 'rgba(96, 165, 250, 0.3)'),
-    barmode = 'group',
-    plot_bgcolor = 'rgba(248, 250, 252, 0.8)',
-    paper_bgcolor = 'rgba(248, 250, 252, 1)',
-    font = list(color = '#1E3A8A')
+    title = "Extreme Temperature Days by Season",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Number of Days"),
+    barmode = "group"
   )
 ```
+
